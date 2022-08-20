@@ -182,7 +182,7 @@ df_1.to_csv("./ev/train_para.csv",
                     "pre_train_step", "learning_rate", "Google r", "Google charge num", "Google SOC", "Google time"])
 
 print("sleep 5 min")
-tm.sleep(10)
+# tm.sleep(10)
 print("------------Start training --------------")
 with tf.Session() as sess:
     sess.run(init)

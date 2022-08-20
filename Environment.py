@@ -103,10 +103,10 @@ class Environment:
             self.directions_data_routes_legs_steps = directions_json['paths'][0]
             # directions_data_routes_summary = directions_data_routes['summary']
             #### process boundary ###
-            self.north = self.directions_data_routes_legs_steps['bbox'][1]
-            self.east = self.directions_data_routes_legs_steps['bbox'][0]
-            self.south = self.directions_data_routes_legs_steps['bbox'][3]
-            self.west = self.directions_data_routes_legs_steps['bbox'][2]
+            self.north = self.directions_data_routes_legs_steps['bbox'][3]
+            self.east = self.directions_data_routes_legs_steps['bbox'][2]
+            self.south = self.directions_data_routes_legs_steps['bbox'][1]
+            self.west = self.directions_data_routes_legs_steps['bbox'][0]
             self.bound = {'north': self.north, 'east': self.east, 'south': self.south, 'west': self.west}  # value of lat/lng
         else:
             # directions_data_routes_bounds = 'N/A'
@@ -194,12 +194,15 @@ class Environment:
             # self.unreach_position_num = self.unreach_position_num + 1
         else:
             self.step_reward -= 0.1  # get -0.1 reward for every transition
+            coordinates = leg_step['points']['coordinates']
+            leg_step = leg_step['instructions']
             for i in range(len(leg_step)):
                 print("For " + str(i) + " in Step", end = '\r')
-                start = (leg_step[i]['start_location']['lat'], leg_step[i]['start_location']['lng'])
-                end = (leg_step[i]['end_location']['lat'], leg_step[i]['end_location']['lng'])
-                duration = leg_step[i]['duration']['value']  # second
-                distance = leg_step[i]['distance']['value']  # km
+                waypoint = leg_step[i]['interval']
+                start = (coordinates[waypoint[0]][1], coordinates[waypoint[0]][0])
+                end = (coordinates[waypoint[1]][1], coordinates[waypoint[1]][0])
+                duration = int(leg_step[i]['time'])  # second
+                distance = leg_step[i]['distance']  # km
                 start_position = str(start[0]) + ',' + str(start[1])
                 end_position = str(end[0]) + ',' + str(end[1])
                 status, height_start = self.elevation_api(start_position)
@@ -235,12 +238,16 @@ class Environment:
                 end_position = str(self.end_position[0]) + ',' + str(self.end_position[1])
                 statusE, leg_stepE, boundE = self.directions_api(next_position, end_position)  # fix
                 self.legE = leg_stepE
+                
+                coordinates = self.legE['points']['coordinates']
+                self.legE = self.legE['instructions']
                 if statusE == 'OK':
                     for i in range(len(self.legE)):
-                        start = (self.legE[i]['start_location']['lat'], self.legE[i]['start_location']['lng'])
-                        end = (self.legE[i]['end_location']['lat'], self.legE[i]['end_location']['lng'])
-                        duration = self.legE[i]['duration']['value']  # second
-                        distance = self.legE[i]['distance']['value']  # km
+                        waypoint = self.legE[i]['interval']
+                        start = (coordinates[waypoint[0]][1], coordinates[waypoint[0]][0])
+                        end = (coordinates[waypoint[1]][1], coordinates[waypoint[1]][0])
+                        duration = int(self.legE[i]['time'])  # second
+                        distance = self.legE[i]['distance']  # km
                         start_position = str(start[0]) + ',' + str(start[1])
                         end_position = str(end[0]) + ',' + str(end[1])
                         status, height_start = self.elevation_api(start_position)
